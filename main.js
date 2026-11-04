@@ -9,16 +9,21 @@
   ['Home', 'index.html', 'home'],
   ['Studio', 'about.html', 'about'],
   ['Services', 'services.html', 'services'],
+  ['Pricing', 'pricing.html', 'pricing'],
   ['Work', 'work.html', 'work'],
   ['Contact', 'contact.html', 'contact']
  ];
  const SERVICES = [
-  ['code-2', 'Web Development', 'Fast, responsive websites and web applications built around your business goals.', 'web-development'],
-  ['shopping-bag', 'E-commerce', 'Online stores with intuitive shopping journeys and a polished brand experience.', 'ecommerce'],
-  ['layout-template', 'UI/UX Design', 'Clear interfaces and thoughtful user journeys, from early concepts to final designs.', 'design'],
-  ['blocks', 'CMS & WordPress', 'Flexible content-managed websites that are easy to update and grow.', 'wordpress'],
-  ['smartphone', 'Web Applications', 'Purpose-built tools and product experiences for real-world workflows.', 'web-apps'],
-  ['gauge', 'Ongoing Support', 'Practical improvements, performance tuning, and dependable post-launch care.', 'support']
+  ['code-2', 'Web Development', 'Fast, responsive websites and web applications built around your business goals.', 'web-development', 'From $50', 'web'],
+  ['shopping-bag', 'E-commerce', 'Online stores with intuitive shopping journeys and a polished brand experience.', 'ecommerce', 'Custom quote', 'web'],
+  ['layout-template', 'UI/UX Design', 'Clear interfaces and thoughtful user journeys, from early concepts to final designs.', 'design', 'From $60', 'uiux'],
+  ['blocks', 'CMS & WordPress', 'Flexible content-managed websites that are easy to update and grow.', 'wordpress', 'Custom quote', 'web'],
+  ['smartphone', 'Web Applications', 'Purpose-built tools and product experiences for real-world workflows.', 'web-apps', 'Custom quote', 'web'],
+  ['gauge', 'Ongoing Support', 'Practical improvements, performance tuning, and dependable post-launch care.', 'support', 'Custom quote', 'web'],
+  ['pen-tool', 'Logo Design', 'Distinctive logo concepts and brand-ready assets for a memorable first impression.', 'logo-design', 'From $20', 'logo'],
+  ['shapes', 'Graphic Design', 'Custom graphics for social posts, campaigns, promotions, and digital brands.', 'graphic-design', 'From $15', 'graphic'],
+  ['calendar-days', 'Social Media Content', 'Monthly content design and planning to help your brand show up consistently.', 'social-media', 'From $120 / month', 'social'],
+  ['megaphone', 'Meta Ads Management', 'Campaign setup, audience planning, and ongoing Facebook and Instagram ads optimization.', 'meta-ads', 'From $50 setup · $150 / month management', 'ads']
  ];
  const SKILLS = {
   'Web & Frontend': ['HTML', 'CSS', 'JavaScript', 'React', 'Tailwind CSS'],
@@ -38,18 +43,58 @@
   ['03', 'Build', 'We develop, review, and refine the product together with regular updates.'],
   ['04', 'Launch', 'We test across devices, prepare for launch, and help you take the next step.']
  ];
+ const PACKAGES = [
+  {
+   name: 'Starter Website',
+   price: '50',
+   description: 'A clean, professional online home for a new business or idea.',
+   features: ['Up to 5 pages', 'Responsive design', 'Contact form', 'Basic SEO setup', 'Social media links', 'Mobile optimized']
+  },
+  {
+   name: 'Professional Website',
+   price: '70',
+   description: 'A richer, flexible website for a growing business ready to do more.',
+   featured: true,
+   features: ['Up to 10 pages', 'Premium UI/UX design', 'Custom animations', 'CMS integration', 'SEO optimization', 'Analytics setup', 'Conversion-focused layouts']
+  },
+  {
+   name: 'Premium / 3D Website',
+   price: '100',
+   description: 'A distinctive digital experience with custom interactions and extra depth.',
+   features: ['Custom visual direction', 'Interactive animations', '3D elements', 'Advanced development', 'Custom integrations', 'Performance optimization', 'Premium user experience']
+  }
+ ];
 
  const page = document.body.dataset.page || 'home';
- const navLinks = NAV.map(([name, href, key]) => `<li><a href="${href}"${key === page ? ' aria-current="page"' : ''}>${name}</a></li>`).join('');
+ const navLinks = NAV.map(([name, href, key]) =>
+  `<li><a href="${href}"${key === page ? ' aria-current="page"' : ''}>${name}</a></li>`
+ ).join('');
  if ($('#links')) $('#links').innerHTML = navLinks;
- if ($('#mobile')) $('#mobile').innerHTML = NAV.map(([name, href, key]) => `<a href="${href}"${key === page ? ' aria-current="page"' : ''}>${name}</a>`).join('');
+ if ($('#mobile')) {
+  $('#mobile').innerHTML = NAV.map(([name, href, key]) =>
+   `<a href="${href}"${key === page ? ' aria-current="page"' : ''}>${name}</a>`
+  ).join('');
+ }
+ const exploreFooter = $$('.footer-column').find(column => {
+  const heading = $('h3', column);
+  return heading && heading.textContent.trim() === 'Explore';
+ });
+ if (exploreFooter && !$('a[href="pricing.html"]', exploreFooter)) {
+  const pricingLink = document.createElement('a');
+  pricingLink.href = 'pricing.html';
+  pricingLink.textContent = 'Pricing';
+  if (page === 'pricing') pricingLink.setAttribute('aria-current', 'page');
+  const workLink = $('a[href="work.html"]', exploreFooter);
+  exploreFooter.insertBefore(pricingLink, workLink || null);
+ }
 
  if ($('#svc')) {
-  $('#svc').innerHTML = SERVICES.map(([icon, title, description, id], index) => `
+  $('#svc').innerHTML = SERVICES.map(([icon, title, description, id, starting, pricingTab], index) => `
    <article id="${id}" class="card tilt rv service-card">
-    <div class="flex justify-between"><i data-lucide="${icon}" class="text-v"></i><span class="text-mute text-sm">0${index + 1}</span></div>
+    <div class="flex justify-between"><i data-lucide="${icon}" class="text-v"></i><span class="text-mute text-sm">${String(index + 1).padStart(2, '0')}</span></div>
     <h3 class="font-head text-xl mt-9">${title}</h3><p class="text-mute mt-2 text-sm">${description}</p>
-    <a class="service-more" href="contact.html">Discuss this service <span aria-hidden="true">↗</span></a>
+    ${starting ? `<p class="service-starting">${starting}</p>` : ''}
+    <a class="service-more" href="${pricingTab ? `pricing.html#panel-${pricingTab}` : 'contact.html'}">${pricingTab ? 'View packages' : 'Discuss this service'} <span aria-hidden="true">↗</span></a>
    </article>`).join('');
  }
  if ($('#skl')) {
@@ -74,6 +119,53 @@
  if ($('#prc')) {
   $('#prc').innerHTML = PROCESS.map(([number, title, description]) => `
    <article class="card rv process-card"><p class="font-head text-4xl grad">${number}</p><h3 class="font-head text-xl mt-6">${title}</h3><p class="text-mute text-sm mt-2">${description}</p></article>`).join('');
+ }
+ if ($('#pricing-cards')) {
+  $('#pricing-cards').innerHTML = PACKAGES.map((plan, index) => `
+   <article class="card pricing-card${plan.featured ? ' pricing-featured' : ''}">
+    ${plan.featured ? '<span class="pricing-badge">MOST POPULAR</span>' : ''}
+    <p class="pricing-number">0${index + 1} <span> / WEBSITE PLAN</span></p>
+    <h3 class="font-head text-xl">${plan.name}</h3>
+    <p class="pricing-description">${plan.description}</p>
+    <p class="pricing-amount"><span>Starting at</span><strong><sup>$</sup>${plan.price}</strong><span>USD</span></p>
+    <a class="pricing-button${plan.featured ? ' pricing-button-primary' : ''}" href="contact.html?plan=${encodeURIComponent(plan.name)}#inquiry">Discuss this plan <span aria-hidden="true">↗</span></a>
+    <ul class="pricing-features">${plan.features.map(feature => `<li><span aria-hidden="true">+</span>${feature}</li>`).join('')}</ul>
+   </article>`).join('');
+ }
+ const pricingTabs = $('#pricing-tabs');
+ if (pricingTabs) {
+   const tabs = $$('[role="tab"]', pricingTabs);
+   const panels = $$('.pricing-tab-panel');
+   const activateTab = (tab, moveFocus = false) => {
+    tabs.forEach(item => {
+     const active = item === tab;
+     item.setAttribute('aria-selected', String(active));
+     item.tabIndex = active ? 0 : -1;
+     const panel = document.getElementById(item.getAttribute('aria-controls'));
+     if (panel) panel.hidden = !active;
+    });
+    if (moveFocus) tab.focus();
+   };
+   tabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => activateTab(tab));
+    tab.addEventListener('keydown', event => {
+     let nextIndex;
+     if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (index + 1) % tabs.length;
+     else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (index - 1 + tabs.length) % tabs.length;
+     else if (event.key === 'Home') nextIndex = 0;
+     else if (event.key === 'End') nextIndex = tabs.length - 1;
+     if (nextIndex === undefined) return;
+     event.preventDefault();
+     activateTab(tabs[nextIndex], true);
+    });
+   });
+   tabs.forEach((tab, index) => {
+    const panel = panels.find(item => item.id === tab.getAttribute('aria-controls'));
+    if (panel) panel.hidden = index !== 0;
+   });
+   const requestedPanel = location.hash.slice(1);
+   const requestedTab = tabs.find(tab => tab.getAttribute('aria-controls') === requestedPanel);
+   if (requestedTab) activateTab(requestedTab);
  }
  if ($('#mq')) {
   const ticker = Object.values(SKILLS).flat().map(skill => `<span>${skill}</span><span>/</span>`).join('');
@@ -201,24 +293,31 @@
  }
 
  const form = $('#form');
- if (form) form.addEventListener('submit', event => {
-  event.preventDefault();
-  const status = $('#status');
-  let valid = true;
-  form.querySelectorAll('.field').forEach(input => {
-   const invalid = !input.value.trim() || (input.type === 'email' && !/^\S+@\S+\.\S+$/.test(input.value));
-   input.classList.toggle('bad', invalid);
-   if (invalid) valid = false;
+ if (form) {
+  const requestedPlan = new URLSearchParams(location.search).get('plan');
+  const availablePlans = [...PACKAGES.map(item => item.name), 'UI/UX Starter', 'Product UI Design', 'Design System', 'Logo Starter', 'Brand Mark', 'Brand Identity', 'Single Graphic', '5 Graphic Designs', '10 Graphic Designs', 'Social Starter', 'Social Growth', 'Social Active', 'Campaign Setup', 'Ads Management', 'Ads Growth'];
+  const plan = requestedPlan && availablePlans.find(name => name.toLowerCase() === requestedPlan.toLowerCase());
+  const subject = $('input[name="subject"]', form);
+  if (plan && subject && !subject.value) subject.value = `${plan} package enquiry`;
+  form.addEventListener('submit', event => {
+   event.preventDefault();
+   const status = $('#status');
+   let valid = true;
+   form.querySelectorAll('.field').forEach(input => {
+    const invalid = !input.value.trim() || (input.type === 'email' && !/^\S+@\S+\.\S+$/.test(input.value));
+    input.classList.toggle('bad', invalid);
+    if (invalid) valid = false;
+   });
+   if (!valid) {
+    status.style.color = '#ff8a8a';
+    status.textContent = 'Please complete every field and enter a valid email address.';
+    return;
+   }
+   const data = new FormData(form);
+   const body = `${data.get('msg')}\n\nFrom: ${data.get('name')} (${data.get('email')})`;
+   status.style.color = '#d7ff4f';
+   status.textContent = 'Opening your email app with the inquiry ready to send.';
+   location.href = `mailto:fahad.developer3122@gmail.com?subject=${encodeURIComponent(data.get('subject'))}&body=${encodeURIComponent(body)}`;
   });
-  if (!valid) {
-   status.style.color = '#ff8a8a';
-   status.textContent = 'Please complete every field and enter a valid email address.';
-   return;
-  }
-  const data = new FormData(form);
-  const body = `${data.get('msg')}\n\nFrom: ${data.get('name')} (${data.get('email')})`;
-  status.style.color = '#d7ff4f';
-  status.textContent = 'Opening your email app with the inquiry ready to send.';
-  location.href = `mailto:fahad.developer3122@gmail.com?subject=${encodeURIComponent(data.get('subject'))}&body=${encodeURIComponent(body)}`;
- });
+ }
 })();
