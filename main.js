@@ -6,7 +6,7 @@
  const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
  const NAV = [
-  ['Home', 'index.html', 'home'],
+  ['Home', '/', 'home'],
   ['Studio', 'about.html', 'about'],
   ['Services', 'services.html', 'services'],
   ['Pricing', 'pricing.html', 'pricing'],
@@ -66,6 +66,16 @@
  ];
 
  const page = document.body.dataset.page || 'home';
+ const themeRoot = document.documentElement;
+ const themeKey = 'nexora-theme';
+ let savedTheme = null;
+ try {
+  savedTheme = localStorage.getItem(themeKey);
+ } catch (error) {
+  console.warn('Theme preference could not be loaded.', error);
+ }
+ themeRoot.dataset.theme = savedTheme === 'light' ? 'light' : 'dark';
+
  const navLinks = NAV.map(([name, href, key]) =>
   `<li><a href="${href}"${key === page ? ' aria-current="page"' : ''}>${name}</a></li>`
  ).join('');
@@ -75,6 +85,52 @@
    `<a href="${href}"${key === page ? ' aria-current="page"' : ''}>${name}</a>`
   ).join('');
  }
+ const navigation = $('header nav'), burger = $('#burger');
+ let themeToggle = null;
+ if (navigation && burger) {
+  const projectLink = $('a.magnetic', navigation);
+  themeToggle = document.createElement('button');
+  themeToggle.id = 'theme-toggle';
+  themeToggle.className = 'theme-toggle';
+  themeToggle.type = 'button';
+  themeToggle.setAttribute('aria-pressed', String(themeRoot.dataset.theme === 'light'));
+  navigation.insertBefore(themeToggle, burger);
+  const updateThemeToggle = () => {
+   const lightMode = themeRoot.dataset.theme === 'light';
+   themeToggle.setAttribute('aria-label', `Switch to ${lightMode ? 'dark' : 'light'} mode`);
+   themeToggle.title = `Switch to ${lightMode ? 'dark' : 'light'} mode`;
+   themeToggle.setAttribute('aria-pressed', String(lightMode));
+   themeToggle.innerHTML = `${lightMode
+    ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/></svg><span>Dark</span>'
+    : '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg><span>Light</span>'}`;
+  };
+  const setTheme = theme => {
+   themeRoot.dataset.theme = theme;
+   themeRoot.style.colorScheme = theme;
+   updateThemeToggle();
+   const themeColor = $('meta[name="theme-color"]');
+   if (themeColor) themeColor.content = theme === 'light' ? '#f6f8f3' : '#080a08';
+  };
+  setTheme(themeRoot.dataset.theme);
+  themeToggle.addEventListener('click', () => {
+   const nextTheme = themeRoot.dataset.theme === 'light' ? 'dark' : 'light';
+   setTheme(nextTheme);
+   try {
+    localStorage.setItem(themeKey, nextTheme);
+   } catch (error) {
+    console.warn('Theme preference could not be saved.', error);
+   }
+  });
+  const navActions = document.createElement('div');
+  navActions.className = 'nav-actions';
+  navigation.insertBefore(navActions, burger);
+  if (projectLink) {
+   projectLink.classList.remove('hidden', 'lg:inline-block');
+   navActions.appendChild(projectLink);
+  }
+  navActions.appendChild(themeToggle);
+ }
+
  const exploreFooter = $$('.footer-column').find(column => {
   const heading = $('h3', column);
   return heading && heading.textContent.trim() === 'Explore';
@@ -180,7 +236,7 @@
   }, { once: true });
  }
 
- const burger = $('#burger'), mobile = $('#mobile');
+ const mobile = $('#mobile');
  const toggleMenu = open => {
   if (!burger || !mobile) return;
   mobile.classList.toggle('open', open);
